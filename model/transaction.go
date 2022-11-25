@@ -9,7 +9,7 @@ type Transaction struct {
 	email         string
 	phone         string
 	date          time.Time
-	quantity      uint16 `required:"true"`
+	quantity      int `required:"true"`
 	discount      float64
 	total         float64
 	pay           float64

@@ -1,4 +1,4 @@
-module transactioN_database
+module transaction_database
 
 go 1.19
 

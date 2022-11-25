@@ -8,7 +8,7 @@ type TransactionDetails struct {
 	product_id     int
 	product_name   string
 	price          float64
-	quantity       uint16 `required:"true"`
+	quantity       int `required:"true"`
 	total          float64
 	created_at     time.Time
 }
