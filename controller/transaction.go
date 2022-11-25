@@ -7,6 +7,7 @@ import (
 
 // kumpulan fungsi yang nanti dipakai di menu / buat end user
 type TransactionHandler interface {
+	
 }
 
 // nyimpen

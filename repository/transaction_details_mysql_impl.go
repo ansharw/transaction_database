@@ -2,10 +2,6 @@ package repository
 
 import "database/sql"
 
-type TransactionDetailsRepository interface {
-	
-}
-
 type transactionDetailsRepository struct {
 	db *sql.DB
 }

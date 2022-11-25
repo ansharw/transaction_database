@@ -2,10 +2,6 @@ package repository
 
 import "database/sql"
 
-type VouchersRepository interface {
-	
-}
-
 type vouchersRepository struct {
 	db *sql.DB
 }
