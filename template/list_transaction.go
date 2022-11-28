@@ -15,5 +15,5 @@ func NewTransactionTemplate(db *sql.DB, transactionHandler controller.Transactio
 }
 
 func (template *transactionTemplate) ListTransaction() {
-
+	
 }
