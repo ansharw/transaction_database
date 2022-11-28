@@ -6,7 +6,6 @@ import (
 	"math"
 	"os"
 	"reflect"
-	"strings"
 	"transaction_database/helper"
 	"transaction_database/model"
 )
@@ -15,53 +14,55 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 	helper.ClearScreen()
 	// var nameProduct string
 	var idProduct, qtyProduct int
+	var custName, email, phone string
+	var discount string
+	var pay float64
 	fmt.Println("===================================")
 	fmt.Println("=  Form Penjualan Produk Phincon  =")
+	fmt.Print("Masukkan Nama Customer : ")
+	fmt.Scanln(&custName)
+	fmt.Print("Masukkan Email Anda : ")
+	fmt.Scanln(&email)
+	fmt.Print("Masukkan Phone Anda : ")
+	fmt.Scanln(&phone)
+	
 	template.ShowProduct()
-
 	// template.InputNameOfProduct(&nameProduct)
 	template.InputIdOfProduct(&idProduct)
 	// quantity of product
 	template.InputQtyOfProduct(&qtyProduct)
+	// template.InputCustName(&custName)
+	template.ShowVoucher()
+	fmt.Print("Masukkan Discount Anda : ")
+	fmt.Scanln(&discount)
+	fmt.Print("Masukkan Uang Anda : ")
+	fmt.Scanln(&pay)
+	// fmt.Println(idProduct, qtyProduct, custName, email, phone, discount, pay)
 
-	// Insert dulu transaction Detail
-	// template.transactionHandler.
-
-	// name, err := InputNameOfProduct()
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// 	helper.BackHandler()
-	// 	FormPenjualan()
-	// }
-	// qty, err := InputQtyOfProduct()
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// 	helper.BackHandler()
-	// 	FormPenjualan()
-	// }
-}
-
-func (template *transactionTemplate) InputNameOfProduct(name *string) {
-	fmt.Print("Masukkan Nama Produk : ")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	nameOfProduct := scanner.Text()
-	strLwr := strings.ToLower(nameOfProduct)
-	products, err := template.transactionHandler.GetProducts()
+	_, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
+	// fmt.Println(trx)
+	// fmt.Println(trxD)
+	// fmt.Println(err)
 	if err != nil {
 		panic(err)
 	}
 
-	if !ValidateName(&strLwr) {
-		fmt.Println("Nama Produk tidak boleh kosong")
+	fmt.Println("")
+	fmt.Println("Data berhasil di input.")
+	helper.BackHandler()
+	Menu(template.db)
+}
+
+func (template *transactionTemplate) InputCustName(custName *string) {
+	fmt.Print("Masukkan Nama Customer : ")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	customerName := scanner.Text()
+
+	if !ValidateCustName(&customerName) {
+		fmt.Println("Nama Customer tidak boleh kosong")
 		helper.BackHandler()
-		template.InputNameOfProduct(&strLwr)
-	} else if ValidateName(&strLwr) {
-		for _, v := range products {
-			if strings.ToLower(*v.GetName()) == strLwr {
-				*name = strLwr
-			}
-		}
+		template.InputCustName(&customerName)
 	}
 }
 
@@ -131,6 +132,17 @@ func ValidateIdProduct(prodId *int) bool {
 		if *prodId == 0 {
 			return false
 		} else if float64(*prodId) == math.NaN() {
+			return false
+		}
+	}
+	return true
+}
+
+func ValidateCustName(custName *string) bool {
+	var c model.Transaction
+	typeOf := reflect.TypeOf(c)
+	if typeOf.Field(2).Tag.Get("required") == "true" {
+		if *custName == "" {
 			return false
 		}
 	}

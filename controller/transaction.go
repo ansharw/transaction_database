@@ -18,7 +18,9 @@ type TransactionHandler interface {
 
 	GetTransactions() ([]model.Transaction, error)
 	// AddTransaction(custName, email, phone string, total, pay float64, trxDetails []model.TransactionDetails) error
-	AddTransaction(prodsId int, quantity int, custName, custEmail, custPhone, discount string, pay float64) error
+	// AddTransaction(prodsId int, quantity int, custName, custEmail, custPhone, discount string, pay float64) error
+	// AddTransaction(prodsId int, quantity int, custName, custEmail, custPhone string, discount string, pay float64) error
+	AddTransaction(prodsId int, quantity int, custName, custEmail, custPhone string, discount string, pay float64) (model.Transaction, []model.TransactionDetails, error)
 }
 
 // nyimpen
@@ -80,23 +82,101 @@ func (handler *transactionHandler) GetTransactions() ([]model.Transaction, error
 
 // eksperimen
 // ini untuk manggil keseluruhan yaitu transaction detail abis itu transaction
-func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, custName, custEmail, custPhone, discount string, pay float64) error {
+// func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, custName, custEmail, custPhone, discount string, pay float64) error {
+// 	ctx := context.Background()
+
+// 	var transaction model.Transaction
+// 	var transactionDetail model.TransactionDetails
+// 	var transactionDetails []model.TransactionDetails
+
+// 	transactionDetail.SetProdId(&prodsId)
+// 	transactionDetail.SetQty(&quantity)
+
+// 	products, err := handler.GetProducts()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	for _, v := range products {
+// 		if v.GetId() == &prodsId {
+// 			transactionDetail.SetProdName(v.GetName())
+// 			transactionDetail.SetPrice(v.GetPrice())
+// 		}
+// 	}
+
+// 	var price float64 = *transactionDetail.GetPrice()
+// 	var qty float64 = float64(quantity)
+// 	total := qty * price
+// 	transactionDetail.SetTotal(&total)
+
+// 	trxDetail, err := handler.transactionDetailsRepository.AddTrxDetails(ctx, transactionDetail)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	transactionDetails = append(transactionDetails, trxDetail)
+
+// 	tx, err := handler.db.BeginTx(ctx, nil)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	timeNow := time.Now()
+// 	transaction.SetDate(&timeNow)
+
+// 	trxNumber := GenerateTrxNumber()
+// 	transaction.SetNumber(trxNumber)
+// 	transaction.SetEmail(&custEmail)
+// 	transaction.SetPhone(&custPhone)
+
+// 	vouchers, err := handler.GetVouchers()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	for _, v := range vouchers {
+// 		if *v.GetCode() == discount {
+// 			total := transactionDetail.GetTotal()
+// 			disc := *v.GetValue() / float64(100)
+// 			discounting := *total * disc
+// 			totalFinal := *total - discounting
+// 			transaction.SetDiscount(&totalFinal)
+// 		}
+// 	}
+// 	transaction.SetPay(&pay)
+
+// 	trxFinal, err := handler.transactionRepository.AddTrx(ctx, tx, transactionDetails, transaction)
+// 	if err != nil {
+// 		tx.Rollback()
+// 		return err
+// 	}
+// 	tx.Commit()
+// 	transaction.SetTransactionDetails(trxFinal)
+
+// 	return nil
+// }
+
+// eksperimen 2
+// ini untuk manggil keseluruhan yaitu transaction detail abis itu transaction
+func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, custName, custEmail, custPhone string, discount string, pay float64) (model.Transaction, []model.TransactionDetails, error) {
 	ctx := context.Background()
 
 	var transaction model.Transaction
 	var transactionDetail model.TransactionDetails
 	var transactionDetails []model.TransactionDetails
 
+	// masukkin data prodId dan qty
 	transactionDetail.SetProdId(&prodsId)
 	transactionDetail.SetQty(&quantity)
 
+	// ini buat dapetin productnya
+	// kalo id nya sama ya dimasukin aja
 	products, err := handler.GetProducts()
 	if err != nil {
 		panic(err)
 	}
 
 	for _, v := range products {
-		if v.GetId() == &prodsId {
+		if *v.GetId() == prodsId {
 			transactionDetail.SetProdName(v.GetName())
 			transactionDetail.SetPrice(v.GetPrice())
 		}
@@ -107,59 +187,77 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	total := qty * price
 	transactionDetail.SetTotal(&total)
 
-	trxDetail, err := handler.transactionDetailsRepository.AddTrxDetails(ctx, transactionDetail)
-	if err != nil {
-		return err
-	}
-	transactionDetails = append(transactionDetails, trxDetail)
-
-	tx, err := handler.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	timeNow := time.Now()
-	transaction.SetDate(&timeNow)
-
+	var now = time.Now()
+	nows := fmt.Sprintf("%d-%d-%d %d:%d:%d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
+	layout := "2006-01-02 15:04:05"
+	date, _ := time.Parse(layout, nows)
 	trxNumber := GenerateTrxNumber()
-	transaction.SetNumber(trxNumber)
-	transaction.SetEmail(&custEmail)
-	transaction.SetPhone(&custPhone)
 
 	vouchers, err := handler.GetVouchers()
 	if err != nil {
 		panic(err)
 	}
 
+	// cek discount
 	for _, v := range vouchers {
 		if *v.GetCode() == discount {
 			total := transactionDetail.GetTotal()
+			transaction.SetTotal(transactionDetail.GetTotal())
 			disc := *v.GetValue() / float64(100)
 			discounting := *total * disc
-			totalFinal := *total - discounting
-			transaction.SetDiscount(&totalFinal)
+			// totalFinal := *total - discounting
+			// transaction.SetDiscount(&totalFinal)
+			transaction.SetDiscount(&discounting)
 		}
 	}
-	transaction.SetPay(&pay)
 
-	trxFinal, err := handler.transactionRepository.AddTrx(ctx, tx, transactionDetails, transaction)
+	// masukin data ke transaction
+	transaction.SetPay(&pay)
+	transaction.SetDate(&date)
+	transaction.SetNumber(&trxNumber)
+	transaction.SetEmail(&custEmail)
+	transaction.SetPhone(&custPhone)
+	transaction.SetCustomerName(&custName)
+	transaction.SetQty(transactionDetail.GetQty())
+
+	// fmt.Println(date)
+	// fmt.Println(transaction.GetDate())
+	fmt.Println("ini transaction detail", transactionDetail)
+	fmt.Println("ini transaction", transaction)
+
+	// masukin semua transaction ke handler
+	trx, err := handler.transactionRepository.AddTrx(ctx, transaction)
+	// fmt.Println(trx)
+	if err != nil {
+		return transaction, transactionDetails, err
+	}
+	// fmt.Println(trx)
+
+	tx, err := handler.db.BeginTx(ctx, nil)
+	// fmt.Println(err)
+	if err != nil {
+		return transaction, transactionDetails, err
+	}
+
+	// masukin semua transaction detail ke handler beserta id trx nya
+	trxD, err := handler.transactionDetailsRepository.AddTrxDetails(ctx, tx, transactionDetail, *trx.GetId())
+	// fmt.Println(err)
 	if err != nil {
 		tx.Rollback()
-		return err
+		return transaction, transactionDetails, err
 	}
+	// fmt.Println(trxD)
+
 	tx.Commit()
-	transaction.SetTransactionDetails(trxFinal)
-
-	return nil
+	transactionDetails = append(transactionDetails, trxD)
+	transaction.SetTransactionDetails(transactionDetails)
+	return transaction, transactionDetails, nil
 }
 
-func GenerateTrxNumber() *string {
-	tempTrxRand := rand.Int()
-	trxNumber := "TRXPHC-" + strconv.Itoa(tempTrxRand)
-	return &trxNumber
+func GenerateTrxNumber() string {
+	var trxNumber string = strconv.Itoa(rand.Int())
+	return trxNumber[:5]
 }
-
-
 
 // eksperimen
 // func (handler *transactionHandler) AddTransactionefef(custName, email, phone string, total, pay float64, trxDetails []model.TransactionDetails) error {

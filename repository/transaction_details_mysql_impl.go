@@ -71,14 +71,40 @@ func (repo *transactionDetailsRepository) GetTrxDetailsByTrxId(ctx context.Conte
 // }
 
 // eksperimen
-func (repo *transactionDetailsRepository) AddTrxDetails(ctx context.Context, trxDetails model.TransactionDetails) (model.TransactionDetails, error) {
-	var query string = "INSERT INTO transaction_details(transaction_id, product_id, product_name, price, quantity, total) VALUES(?,?,?,?,?,?,?)"
+// func (repo *transactionDetailsRepository) AddTrxDetails(ctx context.Context, trxDetails model.TransactionDetails) (model.TransactionDetails, error) {
+// 	var query string = "INSERT INTO transaction_details(transaction_id, product_id, product_name, price, quantity, total) VALUES(?,?,?,?,?,?,?)"
 
-	res, err := repo.db.ExecContext(ctx, query, trxDetails.GetProdId(), trxDetails.GetProdName(), trxDetails.GetPrice(), trxDetails.GetQty(), trxDetails.GetTotal())
+// 	res, err := repo.db.ExecContext(ctx, query, trxDetails.GetProdId(), trxDetails.GetProdName(), trxDetails.GetPrice(), trxDetails.GetQty(), trxDetails.GetTotal())
+
+// 	if err != nil {
+// 		return trxDetails, err
+// 	}
+// 	lastInsertId, _ := res.LastInsertId()
+// 	id := int(lastInsertId)
+// 	trxDetails.SetId(&id)
+
+// 	return trxDetails, err
+// }
+
+// eksperimen 2
+// add transaction detail 
+func (repo *transactionDetailsRepository) AddTrxDetails(ctx context.Context, tx *sql.Tx, trxDetails model.TransactionDetails, trxId int) (model.TransactionDetails, error) {
+	var query string = "INSERT INTO transaction_details(transaction_id, product_id, product_name, price, quantity, total) VALUES(?,?,?,?,?,?)"
+
+	stmt, err := tx.PrepareContext(ctx, query)
+	if err != nil {
+		return trxDetails, err
+	}
+	defer stmt.Close()
+
+	// masukin query nya sesuai dengan yang di minta
+	res, err := stmt.ExecContext(ctx, trxId, trxDetails.GetProdId(), trxDetails.GetProdName(), trxDetails.GetPrice(), trxDetails.GetQty(), trxDetails.GetTotal())
 
 	if err != nil {
 		return trxDetails, err
 	}
+
+	// ini insert lastId nya buat trx details
 	lastInsertId, _ := res.LastInsertId()
 	id := int(lastInsertId)
 	trxDetails.SetId(&id)

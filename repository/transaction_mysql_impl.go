@@ -31,25 +31,43 @@ func NewTransactionRepository(db *sql.DB) *transactionRepository {
 // }
 
 // eksperimen
-func (repo *transactionRepository) AddTrx(ctx context.Context, tx *sql.Tx, trxD []model.TransactionDetails, trx model.Transaction) ([]model.TransactionDetails, error) {
+// func (repo *transactionRepository) AddTrx(ctx context.Context, tx *sql.Tx, trxD []model.TransactionDetails, trx model.Transaction) ([]model.TransactionDetails, error) {
 
-	var trxDetail model.TransactionDetails
-	var query string = "INSERT INTO transaction(number, customer_name, email, phone, date, quantity, discount, total, pay) VALUES(?,?,?,?,?,?,?,?,?)"
+// 	var trxDetail model.TransactionDetails
+// 	var query string = "INSERT INTO transaction(number, customer_name, email, phone, date, quantity, discount, total, pay) VALUES(?,?,?,?,?,?,?,?,?)"
 
-	res, err := repo.db.ExecContext(ctx, query, trx.GetNumber(), trx.GetEmail(), trx.GetPhone(), trx.GetDate(), trx.GetQty(), trx.GetDiscount(), trx.GetTotal(), trx.GetPay())
+// 	res, err := repo.db.ExecContext(ctx, query, trx.GetNumber(), trx.GetEmail(), trx.GetPhone(), trx.GetDate(), trx.GetQty(), trx.GetDiscount(), trx.GetTotal(), trx.GetPay())
+// 	if err != nil {
+// 		return trxD, nil
+// 	}
+
+// 	lastInsertId, _ := res.LastInsertId()
+// 	id := int(lastInsertId)
+// 	trx.SetId(&id)
+// 	trxDetail.SetTrxId(trx.GetId())
+
+// 	return trxD, nil
+// }
+
+// eksperimen 2
+// edit dulu aja
+// addTrx untuk add transaction ke database()
+func (repo *transactionRepository) AddTrx(ctx context.Context, trx model.Transaction) (model.Transaction, error) {
+
+	var query string = "INSERT INTO transactions(number, customer_name, email, phone, date, quantity, discount, total, pay) VALUES(?,?,?,?,?,?,?,?,?)"
+
+	res, err := repo.db.ExecContext(ctx, query, *trx.GetNumber(), *trx.GetCustomerName(), *trx.GetEmail(), *trx.GetPhone(), *trx.GetDate(), *trx.GetQty(), *trx.GetDiscount(), *trx.GetTotal(), *trx.GetPay())
 	if err != nil {
-		return trxD, nil
+		return trx, nil
 	}
 
 	lastInsertId, _ := res.LastInsertId()
 	id := int(lastInsertId)
 	trx.SetId(&id)
-	trxDetail.SetTrxId(trx.GetId())
+	// fmt.Println("trx :", trx)
 
-	return trxD, nil
+	return trx, nil
 }
-
-// eksperimen 2
 
 // backup
 // func (repo *transactionRepository) FindById(ctx context.Context, trxId int) (model.Transaction, error) {
@@ -67,7 +85,7 @@ func (repo *transactionRepository) AddTrx(ctx context.Context, tx *sql.Tx, trxD 
 
 // eksperimen
 func (repo *transactionRepository) FindById(ctx context.Context, trxId int) (model.Transaction, error) {
-	var query string = "SELECT id, number, customer_name, email, phone, total, pay FROM transaction WHERE id=?"
+	var query string = "SELECT id, number, customer_name, email, phone, total, pay FROM transactions WHERE id=?"
 	var trx model.Transaction
 
 	row := repo.db.QueryRowContext(ctx, query, trxId)
@@ -99,7 +117,7 @@ func (repo *transactionRepository) FindById(ctx context.Context, trxId int) (mod
 
 // eksperimen
 func (repo *transactionRepository) FindAll(ctx context.Context) ([]model.Transaction, error) {
-	var query string = "SELECT id, number, customer_name, email, phone, total, pay FROM transaction"
+	var query string = "SELECT id, number, customer_name, email, phone, total, pay FROM transactions"
 	var transactions []model.Transaction
 
 	rows, err := repo.db.QueryContext(ctx, query)
