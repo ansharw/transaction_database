@@ -13,7 +13,7 @@ func Menu(db *sql.DB) {
 	productsRepository := repository.NewProductsRepository(db)
 	transactionRepository := repository.NewTransactionRepository(db)
 	transactionDetailsRepository := repository.NewTransactionDetailsRepository(db)
-	vouchersRepository := repository.VouchersRepository(db)
+	vouchersRepository := repository.NewVouchersRepository(db)
 
 	// ngehandler repository buat di panggil di end user
 	transactionHandler := controller.NewTransactionHandler(db, productsRepository, transactionRepository, transactionDetailsRepository, vouchersRepository)
@@ -38,7 +38,7 @@ func Menu(db *sql.DB) {
 
 	switch input {
 	case 1:
-		transactionTemplate.AddTransaction()
+		transactionTemplate.AddTransactionTemplate()
 	case 2:
 		transactionTemplate.ListTransaction()
 	case 3:

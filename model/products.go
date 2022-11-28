@@ -22,6 +22,6 @@ func (product *Products) GetPrice() *float64 {
 	return &product.price
 }
 
-func (product *Products) GetCreatedAt() *time.Time {
-	return &product.created_at
-}
+// func (product *Products) GetCreatedAt() *time.Time {
+// 	return &product.created_at
+// }

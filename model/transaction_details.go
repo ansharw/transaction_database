@@ -4,11 +4,11 @@ import "time"
 
 type TransactionDetails struct {
 	id             int
-	transaction_id int
-	product_id     int
-	product_name   string
+	transaction_id int `required:"true"`
+	product_id     int `required:"true"`
+	product_name   string `required:"true"`
 	price          float64
-	quantity       int `required:"true"`
+	quantity       int `type:"number"`
 	total          float64
 	created_at     time.Time
 }
@@ -56,7 +56,7 @@ func (transactionDetails *TransactionDetails) SetTrxId(trxId *int) {
 }
 
 func (transactionDetails *TransactionDetails) SetProdId(prodId *int) {
-	transactionDetails.product_id = *prodId
+	transactionDetails.product_id = *prodId	
 }
 
 func (transactionDetails *TransactionDetails) SetProdName(prodName *string) {

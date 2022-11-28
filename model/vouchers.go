@@ -4,8 +4,8 @@ import "time"
 
 type Vouchers struct {
 	id         int
-	name       string
-	price      float64
+	code       string
+	value      float64
 	created_at time.Time
 }
 
@@ -14,14 +14,14 @@ func (vouchers *Vouchers) GetId() *int {
 	return &vouchers.id
 }
 
-func (vouchers *Vouchers) GetName() *string {
-	return &vouchers.name
+func (vouchers *Vouchers) GetCode() *string {
+	return &vouchers.code
 }
 
-func (vouchers *Vouchers) GetPrice() *float64 {
-	return &vouchers.price
+func (vouchers *Vouchers) GetValue() *float64 {
+	return &vouchers.value
 }
 
-func (vouchers *Vouchers) GetCreatedAt() *time.Time {
-	return &vouchers.created_at
-}
+// func (vouchers *Vouchers) GetCreatedAt() *time.Time {
+// 	return &vouchers.created_at
+// }
