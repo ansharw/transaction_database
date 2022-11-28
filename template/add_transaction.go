@@ -17,6 +17,7 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 	var custName, email, phone string
 	var discount string
 	var pay float64
+	var tempSliceMap []map[string]interface{}
 	fmt.Println("===================================")
 	fmt.Println("=  Form Penjualan Produk Phincon  =")
 	fmt.Print("Masukkan Nama Customer : ")
@@ -25,21 +26,45 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 	fmt.Scanln(&email)
 	fmt.Print("Masukkan Phone Anda : ")
 	fmt.Scanln(&phone)
-	
-	template.ShowProduct()
-	// template.InputNameOfProduct(&nameProduct)
-	template.InputIdOfProduct(&idProduct)
-	// quantity of product
-	template.InputQtyOfProduct(&qtyProduct)
-	// template.InputCustName(&custName)
+
+outer:
+	for {
+		template.ShowProduct()
+		// template.InputNameOfProduct(&nameProduct)
+		template.InputIdOfProduct(&idProduct)
+		// quantity of product
+		template.InputQtyOfProduct(&qtyProduct)
+
+		tempMap := map[string]interface{}{
+			"idProduct":  idProduct,
+			"qtyProduct": qtyProduct,
+		}
+		tempSliceMap = append(tempSliceMap, tempMap)
+		fmt.Println("Input data kembali? (y/n)")
+		var option string
+		fmt.Scanln(&option)
+		switch option {
+		case "n":
+			break outer
+		case "y":
+			continue
+		default:
+			break outer
+		}
+	}
+	fmt.Println(tempSliceMap)
+
 	template.ShowVoucher()
-	fmt.Print("Masukkan Discount Anda : ")
+	fmt.Print("Masukkan Code Voucher : ")
 	fmt.Scanln(&discount)
 	fmt.Print("Masukkan Uang Anda : ")
 	fmt.Scanln(&pay)
+
 	// fmt.Println(idProduct, qtyProduct, custName, email, phone, discount, pay)
 
-	_, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
+	// _, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
+
+	_, _, err := template.transactionHandler.AddTransaction(tempSliceMap, custName, email, phone, discount, pay)
 	// fmt.Println(trx)
 	// fmt.Println(trxD)
 	// fmt.Println(err)
