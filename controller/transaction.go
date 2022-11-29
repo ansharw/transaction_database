@@ -296,6 +296,8 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	var qty float64 = float64(quantity)
 	total := qty * price
 	transactionDetail.SetTotal(&total)
+	fmt.Println("ini transsaction detail from controller")
+	fmt.Println(transactionDetail)
 
 	var now = time.Now()
 	nows := fmt.Sprintf("%d-%d-%d %d:%d:%d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
@@ -312,16 +314,17 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	if total > 300000 {
 		for _, v := range vouchers {
 			if *v.GetCode() == discount {
-				total := transactionDetail.GetTotal()
 				transaction.SetTotal(transactionDetail.GetTotal())
+				total := transactionDetail.GetTotal()
 				disc := *v.GetValue() / float64(100)
 				discounting := *total * disc
 				// totalFinal := *total - discounting
 				// transaction.SetDiscount(&totalFinal)
 				transaction.SetDiscount(&discounting)
-			} else if discount == "" || *v.GetCode() != discount {
-				var nol *float64
-				transaction.SetDiscount(nol)
+			} else if (discount == "") || (*v.GetCode() != discount) {
+				var nol float64 = 0
+				transaction.SetDiscount(&nol)
+				transaction.SetTotal(transaction.GetTotal())
 			}
 		}
 	}
@@ -346,7 +349,7 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	if err != nil {
 		return transaction, transactionDetails, err
 	}
-	// fmt.Println(trx)
+	fmt.Println(trx)
 
 	tx, err := handler.db.BeginTx(ctx, nil)
 	// fmt.Println(err)
@@ -361,10 +364,11 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 		tx.Rollback()
 		return transaction, transactionDetails, err
 	}
-	// fmt.Println(trxD)
 
 	tx.Commit()
 	transactionDetails = append(transactionDetails, trxD)
+	fmt.Println("ini dari controller")
+	fmt.Println(transactionDetails)
 
 	transaction.SetTransactionDetails(transactionDetails)
 	return transaction, transactionDetails, nil
