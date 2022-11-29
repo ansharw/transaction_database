@@ -14,6 +14,7 @@ import (
 // kumpulan fungsi yang nanti dipakai di menu / buat end user
 type TransactionHandler interface {
 	GetProducts() ([]model.Products, error)
+	GetProduct(id int) (model.Products, error)
 	GetVouchers() ([]model.Vouchers, error)
 
 	GetTransactions() ([]model.Transaction, error)
@@ -45,6 +46,17 @@ func (handler *transactionHandler) GetProducts() ([]model.Products, error) {
 	}
 
 	return products, nil
+}
+
+func (handler *transactionHandler) GetProduct(id int) (model.Products, error) {
+	ctx := context.Background()
+
+	product, err := handler.productsRepository.FindById(ctx, id)
+	if err != nil {
+		return product, err
+	}
+	
+	return product, nil
 }
 
 func (handler *transactionHandler) GetVouchers() ([]model.Vouchers, error) {
@@ -295,7 +307,7 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	var price float64 = *transactionDetail.GetPrice()
 	var qty float64 = float64(quantity)
 	total := qty * price
-	transactionDetail.SetTotal(&total)
+	// transactionDetail.SetTotal(&total)
 	fmt.Println("ini transsaction detail from controller")
 	fmt.Println(transactionDetail)
 

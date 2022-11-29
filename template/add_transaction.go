@@ -26,11 +26,28 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 	fmt.Print("Masukkan Phone Anda : ")
 	fmt.Scanln(&phone)
 
-	template.ShowProduct()
-	// template.InputNameOfProduct(&nameProduct)
-	template.InputIdOfProduct(&idProduct)
-	// quantity of product
-	template.InputQtyOfProduct(&qtyProduct)
+outer:
+	for {
+		template.ShowProduct()
+		// template.InputNameOfProduct(&nameProduct)
+		template.InputIdOfProduct(&idProduct)
+		// quantity of product
+		template.InputQtyOfProduct(&qtyProduct)
+
+		product, err := template.transactionHandler.GetProduct(idProduct)
+
+		fmt.Println("Input data kembali? (y/n)")
+		var option string
+		fmt.Scanln(&option)
+		switch option {
+		case "n":
+			break outer
+		case "y":
+			continue
+		default:
+			break outer
+		}
+	}
 
 	template.ShowVoucher()
 	fmt.Print("Masukkan Code Voucher : ")
@@ -40,9 +57,9 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 
 	// fmt.Println(idProduct, qtyProduct, custName, email, phone, discount, pay)
 
-	// _, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
-
 	_, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
+
+	// _, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
 	// fmt.Println(trx)
 	// fmt.Println(trxD)
 	// fmt.Println(err)
