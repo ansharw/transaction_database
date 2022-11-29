@@ -47,6 +47,30 @@ func (handler *transactionHandler) GetProducts() ([]model.Products, error) {
 	return products, nil
 }
 
+func (handler *transactionHandler) ShowProducts() ([]model.Products, error) {
+	ctx := context.Background()
+
+	fmt.Println("====================================================")
+	fmt.Println("ID || Nama \t\t|| Price \t\t  ||")
+	fmt.Println("====================================================")
+
+	products, err := handler.productsRepository.FindAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(products) == 0 {
+		fmt.Println("Data Kosong")
+	} else {
+		for _, v := range products {
+			fmt.Printf("%v  || %v \t|| %v \t\t  ||\n", *v.GetId(), *v.GetName(), *v.GetPrice())
+		}
+	}
+	fmt.Println("====================================================")
+
+	return products, nil
+}
+
 func (handler *transactionHandler) GetVouchers() ([]model.Vouchers, error) {
 	ctx := context.Background()
 
@@ -274,6 +298,32 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	var transactionDetail model.TransactionDetails
 	var transactionDetails []model.TransactionDetails
 
+outer:
+	for {
+		handler.ShowProducts()
+		// template.InputNameOfProduct(&nameProduct)
+		template.InputIdOfProduct(&idProduct)
+		// quantity of product
+		template.InputQtyOfProduct(&qtyProduct)
+
+		tempMap := map[string]int{
+			"idProduct":  idProduct,
+			"qtyProduct": qtyProduct,
+		}
+		tempSliceMap = append(tempSliceMap, tempMap)
+		fmt.Println("Input data kembali? (y/n)")
+		var option string
+		fmt.Scanln(&option)
+		switch option {
+		case "n":
+			break outer
+		case "y":
+			continue
+		default:
+			break outer
+		}
+	}
+
 	// masukkin data prodId dan qty
 	transactionDetail.SetProdId(&prodsId)
 	transactionDetail.SetQty(&quantity)
@@ -307,6 +357,12 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	if err != nil {
 		panic(err)
 	}
+
+	template.ShowVoucher()
+	fmt.Print("Masukkan Code Voucher : ")
+	fmt.Scanln(&discount)
+	fmt.Print("Masukkan Uang Anda : ")
+	fmt.Scanln(&pay)
 
 	// cek discount
 	if total > 300000 {

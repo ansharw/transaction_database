@@ -13,11 +13,11 @@ import (
 func (template *transactionTemplate) AddTransactionTemplate() {
 	helper.ClearScreen()
 	// var nameProduct string
-	var idProduct, qtyProduct int
+	// var idProduct, qtyProduct int
 	var custName, email, phone string
-	var discount string
-	var pay float64
-	var tempSliceMap []map[string]interface{}
+	// var discount string
+	// var pay float64
+	// var tempSliceMap []map[string]int
 	fmt.Println("===================================")
 	fmt.Println("=  Form Penjualan Produk Phincon  =")
 	fmt.Print("Masukkan Nama Customer : ")
@@ -27,55 +27,58 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 	fmt.Print("Masukkan Phone Anda : ")
 	fmt.Scanln(&phone)
 
-outer:
-	for {
-		template.ShowProduct()
-		// template.InputNameOfProduct(&nameProduct)
-		template.InputIdOfProduct(&idProduct)
-		// quantity of product
-		template.InputQtyOfProduct(&qtyProduct)
+// outer:
+// 	for {
+// 		template.ShowProduct()
+// 		// template.InputNameOfProduct(&nameProduct)
+// 		template.InputIdOfProduct(&idProduct)
+// 		// quantity of product
+// 		template.InputQtyOfProduct(&qtyProduct)
 
-		tempMap := map[string]interface{}{
-			"idProduct":  idProduct,
-			"qtyProduct": qtyProduct,
-		}
-		tempSliceMap = append(tempSliceMap, tempMap)
-		fmt.Println("Input data kembali? (y/n)")
-		var option string
-		fmt.Scanln(&option)
-		switch option {
-		case "n":
-			break outer
-		case "y":
-			continue
-		default:
-			break outer
-		}
-	}
-	fmt.Println(tempSliceMap)
+// 		tempMap := map[string]int{
+// 			"idProduct":  idProduct,
+// 			"qtyProduct": qtyProduct,
+// 		}
+// 		tempSliceMap = append(tempSliceMap, tempMap)
+// 		fmt.Println("Input data kembali? (y/n)")
+// 		var option string
+// 		fmt.Scanln(&option)
+// 		switch option {
+// 		case "n":
+// 			break outer
+// 		case "y":
+// 			continue
+// 		default:
+// 			break outer
+// 		}
+// 	}
+// 	fmt.Println(tempSliceMap)
 
-	template.ShowVoucher()
-	fmt.Print("Masukkan Code Voucher : ")
-	fmt.Scanln(&discount)
-	fmt.Print("Masukkan Uang Anda : ")
-	fmt.Scanln(&pay)
+// 	template.ShowVoucher()
+// 	fmt.Print("Masukkan Code Voucher : ")
+// 	fmt.Scanln(&discount)
+// 	fmt.Print("Masukkan Uang Anda : ")
+// 	fmt.Scanln(&pay)
+// 	var tempUtama []map[string]int
+
+// 	tempUtama = append(tempUtama, tempSliceMap...)
 
 	// fmt.Println(idProduct, qtyProduct, custName, email, phone, discount, pay)
 
 	// _, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
 
-	_, _, err := template.transactionHandler.AddTransaction(tempSliceMap, custName, email, phone, discount, pay)
+	// _, _, err := template.transactionHandler.AddTransaction(tempSliceMap, custName, email, phone, discount, pay)
 	// fmt.Println(trx)
 	// fmt.Println(trxD)
 	// fmt.Println(err)
-	if err != nil {
-		panic(err)
-	}
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	fmt.Println("")
-	fmt.Println("Data berhasil di input.")
-	helper.BackHandler()
-	Menu(template.db)
+	// fmt.Println("")
+	// fmt.Println("Data berhasil di input.")
+	// helper.BackHandler()
+	// Menu(template.db)
 }
 
 func (template *transactionTemplate) InputCustName(custName *string) {
