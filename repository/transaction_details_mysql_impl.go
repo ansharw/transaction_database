@@ -87,7 +87,7 @@ func (repo *transactionDetailsRepository) GetTrxDetailsByTrxId(ctx context.Conte
 // }
 
 // eksperimen 2
-// add transaction detail 
+// add transaction detail
 func (repo *transactionDetailsRepository) AddTrxDetails(ctx context.Context, tx *sql.Tx, trxDetails model.TransactionDetails, trxId int) (model.TransactionDetails, error) {
 	var query string = "INSERT INTO transaction_details(transaction_id, product_id, product_name, price, quantity, total) VALUES(?,?,?,?,?,?)"
 
@@ -108,6 +108,7 @@ func (repo *transactionDetailsRepository) AddTrxDetails(ctx context.Context, tx 
 	lastInsertId, _ := res.LastInsertId()
 	id := int(lastInsertId)
 	trxDetails.SetId(&id)
+	trxDetails.SetTrxId(&trxId)
 
 	return trxDetails, err
 }

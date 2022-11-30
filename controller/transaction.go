@@ -70,8 +70,8 @@ func (handler *transactionHandler) GetTransactions() ([]model.Transaction, error
 	for i, v := range transactions {
 		transactionDetails, err := handler.transactionDetailsRepository.GetTrxDetailsByTrxId(ctx, *v.GetId())
 		if err != nil {
-			fmt.Println("ini dari transaction controller ", v)
-			fmt.Println(v.GetId())
+			// fmt.Println("ini dari transaction controller ", v)
+			// fmt.Println(v.GetId())
 			return nil, err
 		}
 		transactions[i].SetTransactionDetails(transactionDetails)
@@ -295,14 +295,14 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	var price float64 = *transactionDetail.GetPrice()
 	var qty float64 = float64(quantity)
 	total := qty * price
+	// fmt.Println(qty)
+	// fmt.Println(price)
 	transactionDetail.SetTotal(&total)
-	fmt.Println("ini transsaction detail from controller")
-	fmt.Println(transactionDetail)
 
 	var now = time.Now()
 	nows := fmt.Sprintf("%d-%d-%d %d:%d:%d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 	layout := "2006-01-02 15:04:05"
-	date, _ := time.Parse(layout, nows)
+	date, _ := time.Parse(layout, nows)                    
 	trxNumber := GenerateTrxNumber()
 
 	vouchers, err := handler.GetVouchers()
@@ -310,24 +310,42 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 		panic(err)
 	}
 
+	var nol float64 = 0
 	// cek discount
+	// if total > 300000 {
+	// 	for _, v := range vouchers {
+	// 		if (*v.GetCode() != discount) || (discount == "") {
+	// 			transaction.SetDiscount(&nol)
+	// 			fmt.Println("atau yang ini")
+	// 			fmt.Println(*v.GetCode())
+	// 			fmt.Println("bates")
+	// 		} else if *v.GetCode() == discount {
+	// 			total := transactionDetail.GetTotal()
+	// 			disc := *v.GetValue() / float64(100)
+	// 			discounting := *total * disc
+	// 			transaction.SetDiscount(&discounting)
+	// 			fmt.Println("yang ini")
+	// 			fmt.Println(*v.GetCode())
+	// 			fmt.Println("bates")
+	// 		}
+	// 	}
+	// 	fmt.Println("yang ini bukan")
+	// 	return transaction, transactionDetails, err
+	// }
+
 	if total > 300000 {
 		for _, v := range vouchers {
 			if *v.GetCode() == discount {
-				transaction.SetTotal(transactionDetail.GetTotal())
 				total := transactionDetail.GetTotal()
 				disc := *v.GetValue() / float64(100)
 				discounting := *total * disc
-				// totalFinal := *total - discounting
-				// transaction.SetDiscount(&totalFinal)
 				transaction.SetDiscount(&discounting)
-			} else if (discount == "") || (*v.GetCode() != discount) {
-				var nol float64 = 0
-				transaction.SetDiscount(&nol)
-				transaction.SetTotal(transaction.GetTotal())
 			}
+			transaction.SetDiscount(&nol)
 		}
 	}
+	
+	// transaction.SetDiscount(&nol)
 
 	// masukin data ke transaction
 	transaction.SetPay(&pay)
@@ -340,16 +358,18 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 
 	// fmt.Println(date)
 	// fmt.Println(transaction.GetDate())
-	fmt.Println("ini transaction detail", transactionDetail)
-	fmt.Println("ini transaction", transaction)
+	// fmt.Println("ini transaction detail", transactionDetail)
+	// fmt.Println("ini transaction", transaction)
 
 	// masukin semua transaction ke handler
 	trx, err := handler.transactionRepository.AddTrx(ctx, transaction)
 	// fmt.Println(trx)
+	fmt.Println("ini transsaction from controller")
+	fmt.Println(trx)
 	if err != nil {
 		return transaction, transactionDetails, err
 	}
-	fmt.Println(trx)
+	// fmt.Println(trx)
 
 	tx, err := handler.db.BeginTx(ctx, nil)
 	// fmt.Println(err)
@@ -360,6 +380,8 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	// masukin semua transaction detail ke handler beserta id trx nya
 	trxD, err := handler.transactionDetailsRepository.AddTrxDetails(ctx, tx, transactionDetail, *trx.GetId())
 	// fmt.Println(err)
+	fmt.Println("ini transsaction detail from controller")
+	fmt.Println(trxD)
 	if err != nil {
 		tx.Rollback()
 		return transaction, transactionDetails, err
@@ -367,8 +389,6 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 
 	tx.Commit()
 	transactionDetails = append(transactionDetails, trxD)
-	fmt.Println("ini dari controller")
-	fmt.Println(transactionDetails)
 
 	transaction.SetTransactionDetails(transactionDetails)
 	return transaction, transactionDetails, nil
