@@ -299,40 +299,19 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	// fmt.Println(price)
 	transactionDetail.SetTotal(&total)
 
-	var now = time.Now()
-	nows := fmt.Sprintf("%d-%d-%d %d:%d:%d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
-	layout := "2006-01-02 15:04:05"
-	date, _ := time.Parse(layout, nows)                    
-	trxNumber := GenerateTrxNumber()
+	var layoutFormat, value string
+	var date time.Time
+	layoutFormat = "2006-01-02"
+	value = time.Now().Format("2006-01-02")
+	date, _ = time.Parse(layoutFormat, value)
 
+	trxNumber := GenerateTrxNumber()
 	vouchers, err := handler.GetVouchers()
 	if err != nil {
 		panic(err)
 	}
 
 	var nol float64 = 0
-	// cek discount
-	// if total > 300000 {
-	// 	for _, v := range vouchers {
-	// 		if (*v.GetCode() != discount) || (discount == "") {
-	// 			transaction.SetDiscount(&nol)
-	// 			fmt.Println("atau yang ini")
-	// 			fmt.Println(*v.GetCode())
-	// 			fmt.Println("bates")
-	// 		} else if *v.GetCode() == discount {
-	// 			total := transactionDetail.GetTotal()
-	// 			disc := *v.GetValue() / float64(100)
-	// 			discounting := *total * disc
-	// 			transaction.SetDiscount(&discounting)
-	// 			fmt.Println("yang ini")
-	// 			fmt.Println(*v.GetCode())
-	// 			fmt.Println("bates")
-	// 		}
-	// 	}
-	// 	fmt.Println("yang ini bukan")
-	// 	return transaction, transactionDetails, err
-	// }
-
 	if total > 300000 {
 		for _, v := range vouchers {
 			if *v.GetCode() == discount {
@@ -340,12 +319,17 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 				disc := *v.GetValue() / float64(100)
 				discounting := *total * disc
 				transaction.SetDiscount(&discounting)
+				transaction.SetTotal(transactionDetail.GetTotal())
+				break
+			} else {
+				transaction.SetDiscount(&nol)
+				transaction.SetTotal(transactionDetail.GetTotal())
 			}
-			transaction.SetDiscount(&nol)
 		}
+	} else {
+		transaction.SetDiscount(&nol)
+		transaction.SetTotal(transactionDetail.GetTotal())
 	}
-	
-	// transaction.SetDiscount(&nol)
 
 	// masukin data ke transaction
 	transaction.SetPay(&pay)
@@ -366,6 +350,7 @@ func (handler *transactionHandler) AddTransaction(prodsId int, quantity int, cus
 	// fmt.Println(trx)
 	fmt.Println("ini transsaction from controller")
 	fmt.Println(trx)
+	fmt.Println(err)
 	if err != nil {
 		return transaction, transactionDetails, err
 	}

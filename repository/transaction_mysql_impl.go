@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"transaction_database/model"
 )
 
@@ -57,14 +58,15 @@ func (repo *transactionRepository) AddTrx(ctx context.Context, trx model.Transac
 	var query string = "INSERT INTO transactions(number, customer_name, email, phone, date, quantity, discount, total, pay) VALUES(?,?,?,?,?,?,?,?,?)"
 
 	res, err := repo.db.ExecContext(ctx, query, *trx.GetNumber(), *trx.GetCustomerName(), *trx.GetEmail(), *trx.GetPhone(), *trx.GetDate(), *trx.GetQty(), *trx.GetDiscount(), *trx.GetTotal(), *trx.GetPay())
+	fmt.Println(err)
 	if err != nil {
 		return trx, nil
 	}
 
 	lastInsertId, _ := res.LastInsertId()
+	fmt.Println(lastInsertId)
 	id := int(lastInsertId)
 	trx.SetId(&id)
-	// fmt.Println("trx :", trx)
 
 	return trx, nil
 }
