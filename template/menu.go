@@ -40,7 +40,7 @@ func Menu(db *sql.DB) {
 	case 1:
 		transactionTemplate.AddTransactionTemplate()
 	case 2:
-		transactionTemplate.ListTransaction()
+		transactionTemplate.EachTransaction()
 	case 3:
 		transactionTemplate.ListProduct()
 	case 4:

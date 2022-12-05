@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"time"
 	"transaction_database/model"
@@ -17,6 +16,7 @@ type TransactionHandler interface {
 	GetVouchers() ([]model.Vouchers, error)
 	GetVoucher(code string) (model.Vouchers, error)
 	GetTransactions() ([]model.Transaction, error)
+	GetTransactionByNumber(trxNumber string) (model.Transaction, error)
 	AddTransaction(trx *model.Transaction, custName, custEmail, custPhone string, discount string, pay float64) (model.Transaction, []model.TransactionDetails, error)
 	GenerateProduct(idProduct int, prodName string, prodPrice float64, quantity int) model.TransactionDetails
 }
@@ -31,6 +31,27 @@ type transactionHandler struct {
 
 func NewTransactionHandler(db *sql.DB, productsRepository repository.ProductsRepository, transactionRepository repository.TransactionRepository, transactionDetailsRepository repository.TransactionDetailsRepository, vouchersRepository repository.VouchersRepository) *transactionHandler {
 	return &transactionHandler{db, productsRepository, transactionRepository, transactionDetailsRepository, vouchersRepository}
+}
+
+func (handler *transactionHandler) GetTransactionByNumber(trxNumber string) (model.Transaction, error) {
+	ctx := context.Background()
+
+	trx, err := handler.transactionRepository.FindByNumber(ctx, trxNumber)
+	if err != nil {
+		return trx, err
+	}
+
+	if err == sql.ErrNoRows {
+		return trx, err
+	}
+
+	trxD, err := handler.transactionDetailsRepository.GetTrxDetailsByTrxId(ctx, *trx.GetId())
+	if err != nil {
+		panic(trxD)
+	}
+	trx.SetTransactionDetails(trxD)
+
+	return trx, nil
 }
 
 func (handler *transactionHandler) GetProducts() ([]model.Products, error) {
@@ -114,7 +135,7 @@ func (handler *transactionHandler) GenerateProduct(idProduct int, prodName strin
 }
 
 func GenerateTrxNumber() string {
-	var trxNumber string = strconv.Itoa(rand.Int())
+	var trxNumber string = strconv.Itoa(time.Now().Nanosecond())
 	return trxNumber[:5]
 }
 
@@ -170,7 +191,7 @@ func (handler *transactionHandler) AddTransaction(trx *model.Transaction, custNa
 	}
 
 	trxs, err := handler.transactionRepository.AddTrx(ctx, transaction)
-	fmt.Println("ini transsaction from controller")
+	fmt.Println("ini transaction from controller")
 	fmt.Println(trxs)
 	if err != nil {
 		return transaction, transactionDetails, err
@@ -179,11 +200,10 @@ func (handler *transactionHandler) AddTransaction(trx *model.Transaction, custNa
 	for _, v := range *trx.GetTransactionDetails() {
 		trxD, _ := handler.transactionDetailsRepository.AddTrxDetails(ctx, v, *trxs.GetId())
 		// fmt.Println(err)
-		fmt.Println("ini transsaction detail from controller")
+		fmt.Println("ini transaction detail from controller")
 		fmt.Println(trxD)
 		transactionDetails = append(transactionDetails, v)
 		transaction.SetTransactionDetails(transactionDetails)
 	}
 	return transaction, transactionDetails, nil
 }
-

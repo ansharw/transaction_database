@@ -32,14 +32,13 @@ func (repo *transactionRepository) AddTrx(ctx context.Context, trx model.Transac
 	return trx, nil
 }
 
-
 // eksperimen
-func (repo *transactionRepository) FindById(ctx context.Context, trxId int) (model.Transaction, error) {
-	var query string = "SELECT id, number, customer_name, email, phone, total, pay FROM transactions WHERE id=?"
+func (repo *transactionRepository) FindByNumber(ctx context.Context, trxNumber string) (model.Transaction, error) {
+	var query string = "SELECT id, number, customer_name, email, phone, total, pay, date FROM transactions WHERE number = ?"
 	var trx model.Transaction
 
-	row := repo.db.QueryRowContext(ctx, query, trxId)
-	err := row.Scan(trx.GetId(), trx.GetNumber(), trx.GetCustomerName(), trx.GetEmail(), trx.GetPhone(), trx.GetTotal(), trx.GetPay())
+	row := repo.db.QueryRowContext(ctx, query, trxNumber)
+	err := row.Scan(trx.GetId(), trx.GetNumber(), trx.GetCustomerName(), trx.GetEmail(), trx.GetPhone(), trx.GetTotal(), trx.GetPay(), trx.GetDate())
 	if err != nil {
 		return trx, err
 	}

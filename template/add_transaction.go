@@ -3,7 +3,6 @@ package template
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"reflect"
 	"transaction_database/helper"
@@ -20,32 +19,23 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 	var trx model.Transaction
 	fmt.Println("===================================")
 	fmt.Println("=  Form Penjualan Produk Phincon  =")
-	fmt.Print("Masukkan Nama Customer : ")
-	fmt.Scanln(&custName)
+	template.InputCustName(&custName)
 	fmt.Print("Masukkan Email Anda : ")
 	fmt.Scanln(&email)
-	fmt.Print("Masukkan Phone Anda : ")
-	fmt.Scanln(&phone)
+	template.InputPhone(&phone)
 
 loop:
 	for {
 		template.ShowProduct()
-		// template.InputNameOfProduct(&nameProduct)
-		template.InputIdOfProduct(&idProduct)
-		// quantity of product
+		product := template.InputIdOfProduct(&idProduct)
 		template.InputQtyOfProduct(&qtyProduct)
-
-		product, err := template.transactionHandler.GetProduct(idProduct)
-		if err != nil {
-			panic(err)
-		}
 
 		if *product.GetId() == idProduct {
 			trxD := template.transactionHandler.GenerateProduct(idProduct, *product.GetName(), *product.GetPrice(), qtyProduct)
 			*trx.GetTransactionDetails() = append(*trx.GetTransactionDetails(), trxD)
 		}
 
-		fmt.Println("Input produk kembali? (y/n)")
+		fmt.Print("Input produk kembali(y/n)? ")
 		var option string
 		fmt.Scanln(&option)
 		switch option {
@@ -70,14 +60,37 @@ loop:
 			panic(err)
 		}
 
+		fmt.Println("ini cek :", trx)
+
 		fmt.Println("")
 		fmt.Println("Total Belanja: ", *trx.GetTotal())
 		fmt.Println("Total Diskon: ", *trx.GetDiscount())
 		fmt.Println("Total Bayar: ", *trx.GetTotal()-*trx.GetDiscount())
-		fmt.Println("jumlah uang anda:", *trx.GetPay())
+		fmt.Println("Jumlah uang anda:", *trx.GetPay())
+		fmt.Println("ini cek 2 :", trx)
+		tampilanStruk(&trx)
 		helper.BackHandler()
 		Menu(template.db)
+	} else {
+		fmt.Println("Transaksi tidak valid")
 	}
+}
+
+func tampilanStruk(trx *model.Transaction) {
+	helper.ClearScreen()
+	fmt.Println("Struk Transaksi")
+	fmt.Println("Qty\t Item\t Total")
+	for _, v := range *trx.GetTransactionDetails() {
+		fmt.Printf("%d\t %s\t %.0f\n", *v.GetQty(), *v.GetProdName(), *v.GetTotal())
+	}
+	fmt.Printf("Total\t \t %v\n", *trx.GetTotal())
+	fmt.Printf("Discount\t \t %v\n", *trx.GetDiscount())
+	var discounting = *trx.GetTotal() - *trx.GetDiscount()
+	fmt.Printf("Total Discount\t \t %v\n", discounting)
+	fmt.Printf("Payment\t \t %v\n", *trx.GetPay())
+	fmt.Printf("Change\t \t %v\n", *trx.GetPay()-discounting)
+	date := trx.GetDate().Format("2006-01-02")
+	fmt.Printf("Transaction Date\t %v\n", date)
 }
 
 func (template *transactionTemplate) InputCustName(custName *string) {
@@ -91,28 +104,22 @@ func (template *transactionTemplate) InputCustName(custName *string) {
 		helper.BackHandler()
 		template.InputCustName(&customerName)
 	}
+
+	*custName = customerName
 }
 
-func (template *transactionTemplate) InputIdOfProduct(prodId *int) {
-	var input int
+func (template *transactionTemplate) InputIdOfProduct(idProduct *int) model.Products {
 	fmt.Print("Masukkan Id Produk : ")
-	fmt.Scanln(&input)
-	products, err := template.transactionHandler.GetProducts()
+	fmt.Scanln(idProduct)
+
+	product, err := template.transactionHandler.GetProduct(*idProduct)
 	if err != nil {
-		panic(err)
+		fmt.Println("id product tidak sesuai")
+		helper.BackHandler()
+		template.InputIdOfProduct(idProduct)
 	}
 
-	if !ValidateIdProduct(&input) {
-		fmt.Println("Id Produk tidak boleh kosong")
-		helper.BackHandler()
-		template.InputIdOfProduct(&input)
-	} else if ValidateIdProduct(&input) {
-		for _, v := range products {
-			if *v.GetId() == input {
-				*prodId = input
-			}
-		}
-	}
+	return product
 }
 
 func (template *transactionTemplate) InputQtyOfProduct(qty *int) {
@@ -126,6 +133,21 @@ func (template *transactionTemplate) InputQtyOfProduct(qty *int) {
 		template.InputQtyOfProduct(&input)
 	}
 	*qty = input
+}
+
+func (template *transactionTemplate) InputPhone(phone *string) {
+	fmt.Print("Masukkan Nomer Telepon : ")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	phoneNumber := scanner.Text()
+
+	if !ValidatePhone(&phoneNumber) {
+		fmt.Println("Nomer Telepon Kosong atau kurang dari 10 digit")
+		helper.BackHandler()
+		template.InputPhone(&phoneNumber)
+	}
+
+	*phone = phoneNumber
 }
 
 func ValidateName(name *string) bool {
@@ -145,21 +167,6 @@ func ValidateQty(qty *int) bool {
 	if typeOf.Field(5).Tag.Get("type") == "number" {
 		if *qty == 0 {
 			return false
-		} else if float64(*qty) == math.NaN() {
-			return false
-		}
-	}
-	return true
-}
-
-func ValidateIdProduct(prodId *int) bool {
-	var c model.TransactionDetails
-	typeOf := reflect.TypeOf(c)
-	if typeOf.Field(2).Tag.Get("required") == "true" {
-		if *prodId == 0 {
-			return false
-		} else if float64(*prodId) == math.NaN() {
-			return false
 		}
 	}
 	return true
@@ -172,6 +179,15 @@ func ValidateCustName(custName *string) bool {
 		if *custName == "" {
 			return false
 		}
+	}
+	return true
+}
+
+func ValidatePhone(phone *string) bool {
+	if *phone == "" {
+		return false
+	} else if len(*phone) < 10 {
+		return false
 	}
 	return true
 }
