@@ -22,6 +22,6 @@ func (vouchers *Vouchers) GetValue() *float64 {
 	return &vouchers.value
 }
 
-// func (vouchers *Vouchers) GetCreatedAt() *time.Time {
-// 	return &vouchers.created_at
-// }
+func (vouchers *Vouchers) GetCreatedAt() *time.Time {
+	return &vouchers.created_at
+}

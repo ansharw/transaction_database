@@ -29,3 +29,15 @@ func (repo *vouchersRepository) FindAll(ctx context.Context) ([]model.Vouchers, 
 	}
 	return vouchers, nil
 }
+
+func (repo *vouchersRepository) FindVoucher(ctx context.Context, code string) (model.Vouchers, error) {
+	var vouch model.Vouchers
+	query := "SELECT id, code, value FROM vouchers WHERE code LIKE ?"
+
+	rows := repo.db.QueryRowContext(ctx, query, code)
+	err := rows.Scan(vouch.GetId(), vouch.GetCode(), vouch.GetValue())
+	if err != nil {
+		return vouch, err
+	}
+	return vouch, nil
+}

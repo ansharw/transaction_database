@@ -2,22 +2,6 @@ package model
 
 import "time"
 
-// backup
-// type Transaction struct {
-// 	id                  int
-// 	number              string
-// 	customer_name       string `required:"true"`
-// 	email               string
-// 	phone               string
-// 	date                time.Time
-// 	quantity            int `required:"true"`
-// 	discount            float64
-// 	total               float64
-// 	pay                 float64
-// 	created_at          time.Time
-// 	transaction_details []TransactionDetails
-// }
-
 // eksperimen
 type Transaction struct {
 	id                  int
@@ -33,14 +17,6 @@ type Transaction struct {
 	created_at          time.Time
 	transaction_details []TransactionDetails
 }
-
-// type TransactionDetail struct {
-// 	id         int
-// 	price      float64
-// 	quantity   int `required:"true"`
-// 	total      float64
-// 	created_at time.Time
-// }
 
 // Getter
 func (transaction *Transaction) GetId() *int {
@@ -83,17 +59,13 @@ func (transaction *Transaction) GetPay() *float64 {
 	return &transaction.pay
 }
 
-// func (transaction *Transaction) GetCreatedAt() *time.Time {
-// 	return &transaction.created_at
-// }
-
-func (transaction *Transaction) GetTransactionDetails() []TransactionDetails {
-	return transaction.transaction_details
+func (transaction *Transaction) GetCreatedAt() *time.Time {
+	return &transaction.created_at
 }
 
-// func (transactionDetail *TransactionDetail) GetTransactionDetail() (*int, *float64, *float64) {
-// 	return &transactionDetail.id, &transactionDetail.price, &transactionDetail.total
-// }
+func (transaction *Transaction) GetTransactionDetails() *[]TransactionDetails {
+	return &transaction.transaction_details
+}
 
 // Setter
 func (transaction *Transaction) SetId(id *int) {
@@ -136,17 +108,6 @@ func (transaction *Transaction) SetPay(pay *float64) {
 	transaction.pay = *pay
 }
 
-// func (transaction *Transaction) SetCreatedAt(createdAt *time.Time) {
-// 	transaction.created_at = *createdAt
-// }
-
 func (transaction *Transaction) SetTransactionDetails(transactionDetail []TransactionDetails) {
 	transaction.transaction_details = transactionDetail
 }
-
-// func (transactionDetail *TransactionDetail) SetTrx(id *int, price *float64, quantity *int, total *float64) {
-// 	transactionDetail.id = *id
-// 	transactionDetail.price = *price
-// 	transactionDetail.quantity = *quantity
-// 	transactionDetail.total = *total
-// }

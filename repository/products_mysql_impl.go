@@ -29,3 +29,15 @@ func (repo *productsRepository) FindAll(ctx context.Context) ([]model.Products, 
 	}
 	return products, nil
 }
+
+func (repo *productsRepository) FindProduct(ctx context.Context, id int) (model.Products, error) {
+	var prod model.Products
+	query := "SELECT id, name, price FROM products WHERE id=?"
+
+	rows := repo.db.QueryRowContext(ctx, query, id)
+	err := rows.Scan(prod.GetId(), prod.GetName(), prod.GetPrice())
+	if err != nil {
+		return prod, err
+	}
+	return prod, nil
+}

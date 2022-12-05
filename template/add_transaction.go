@@ -17,6 +17,7 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 	var custName, email, phone string
 	var discount string
 	var pay float64
+	var trx model.Transaction
 	fmt.Println("===================================")
 	fmt.Println("=  Form Penjualan Produk Phincon  =")
 	fmt.Print("Masukkan Nama Customer : ")
@@ -26,34 +27,57 @@ func (template *transactionTemplate) AddTransactionTemplate() {
 	fmt.Print("Masukkan Phone Anda : ")
 	fmt.Scanln(&phone)
 
-	template.ShowProduct()
-	// template.InputNameOfProduct(&nameProduct)
-	template.InputIdOfProduct(&idProduct)
-	// quantity of product
-	template.InputQtyOfProduct(&qtyProduct)
+loop:
+	for {
+		template.ShowProduct()
+		// template.InputNameOfProduct(&nameProduct)
+		template.InputIdOfProduct(&idProduct)
+		// quantity of product
+		template.InputQtyOfProduct(&qtyProduct)
 
-	template.ShowVoucher()
-	fmt.Print("Masukkan Code Voucher : ")
-	fmt.Scanln(&discount)
-	fmt.Print("Masukkan Uang Anda : ")
-	fmt.Scanln(&pay)
+		product, err := template.transactionHandler.GetProduct(idProduct)
+		if err != nil {
+			panic(err)
+		}
 
-	// fmt.Println(idProduct, qtyProduct, custName, email, phone, discount, pay)
+		if *product.GetId() == idProduct {
+			trxD := template.transactionHandler.GenerateProduct(idProduct, *product.GetName(), *product.GetPrice(), qtyProduct)
+			*trx.GetTransactionDetails() = append(*trx.GetTransactionDetails(), trxD)
+		}
 
-	// _, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
-
-	_, _, err := template.transactionHandler.AddTransaction(idProduct, qtyProduct, custName, email, phone, discount, pay)
-	// fmt.Println(trx)
-	// fmt.Println(trxD)
-	// fmt.Println(err)
-	if err != nil {
-		panic(err)
+		fmt.Println("Input produk kembali? (y/n)")
+		var option string
+		fmt.Scanln(&option)
+		switch option {
+		case "n":
+			break loop
+		case "y":
+			continue
+		default:
+			break loop
+		}
 	}
 
-	fmt.Println("")
-	fmt.Println("Data berhasil di input.")
-	helper.BackHandler()
-	Menu(template.db)
+	if len(*trx.GetTransactionDetails()) > 0 {
+		template.ShowVoucher()
+		fmt.Print("Masukkan Code Voucher : ")
+		fmt.Scanln(&discount)
+		fmt.Print("Masukkan Uang Anda : ")
+		fmt.Scanln(&pay)
+
+		trx, _, err := template.transactionHandler.AddTransaction(&trx, custName, email, phone, discount, pay)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("")
+		fmt.Println("Total Belanja: ", *trx.GetTotal())
+		fmt.Println("Total Diskon: ", *trx.GetDiscount())
+		fmt.Println("Total Bayar: ", *trx.GetTotal()-*trx.GetDiscount())
+		fmt.Println("jumlah uang anda:", *trx.GetPay())
+		helper.BackHandler()
+		Menu(template.db)
+	}
 }
 
 func (template *transactionTemplate) InputCustName(custName *string) {
