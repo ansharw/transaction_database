@@ -16,7 +16,7 @@ func NewTransactionDetailsRepository(db *sql.DB) *transactionDetailsRepository {
 
 func (repo *transactionDetailsRepository) GetTrxDetailsByTrxId(ctx context.Context, trxId int) ([]model.TransactionDetails, error) {
 	var trxDetails []model.TransactionDetails
-	var query string = "SELECT id, price, quantity, total FROM transaction_details WHERE transaction_id=?"
+	var query string = "SELECT product_name, price, quantity, total FROM transaction_details WHERE transaction_id=?"
 
 	rows, err := repo.db.QueryContext(ctx, query, trxId)
 	if err != nil {
@@ -24,12 +24,11 @@ func (repo *transactionDetailsRepository) GetTrxDetailsByTrxId(ctx context.Conte
 	}
 	for rows.Next() {
 		var trxDetail model.TransactionDetails
-		rows.Scan(trxDetail.GetId(), trxDetail.GetPrice(), trxDetail.GetQty(), trxDetail.GetTotal())
+		rows.Scan(trxDetail.GetProdName(), trxDetail.GetPrice(), trxDetail.GetQty(), trxDetail.GetTotal())
 		trxDetails = append(trxDetails, trxDetail)
 	}
 	return trxDetails, err
 }
-
 
 func (repo *transactionDetailsRepository) AddTrxDetails(ctx context.Context, trxDetails model.TransactionDetails, trxId int) (model.TransactionDetails, error) {
 	var query string = "INSERT INTO transaction_details(transaction_id, product_id, product_name, price, quantity, total) VALUES(?,?,?,?,?,?)"
