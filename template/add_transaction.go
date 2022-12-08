@@ -50,8 +50,7 @@ loop:
 
 	if len(*trx.GetTransactionDetails()) > 0 {
 		template.ShowVoucher()
-		fmt.Print("Masukkan Code Voucher : ")
-		fmt.Scanln(&discount)
+		template.InputVoucher(&discount)
 		fmt.Print("Masukkan Uang Anda : ")
 		fmt.Scanln(&pay)
 
@@ -60,19 +59,18 @@ loop:
 			panic(err)
 		}
 
-		fmt.Println("ini cek :", trx)
-
 		fmt.Println("")
 		fmt.Println("Total Belanja: ", *trx.GetTotal())
 		fmt.Println("Total Diskon: ", *trx.GetDiscount())
 		fmt.Println("Total Bayar: ", *trx.GetTotal()-*trx.GetDiscount())
 		fmt.Println("Jumlah uang anda:", *trx.GetPay())
-		fmt.Println("ini cek 2 :", trx)
 		tampilanStruk(&trx)
 		helper.BackHandler()
 		Menu(template.db)
 	} else {
 		fmt.Println("Transaksi tidak valid")
+		helper.BackHandler()
+		Menu(template.db)
 	}
 }
 
@@ -106,6 +104,19 @@ func (template *transactionTemplate) InputCustName(custName *string) {
 	}
 
 	*custName = customerName
+}
+
+func (template *transactionTemplate) InputVoucher(vouch *string) {
+	fmt.Print("Masukkan Code Voucher : ")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	voucher := scanner.Text()
+	code, _ := template.transactionHandler.GetVoucher(voucher)
+
+	if *code.GetCode() == "" {
+		fmt.Println("Voucher tidak di temukan")
+	}
+	*vouch = voucher
 }
 
 func (template *transactionTemplate) InputIdOfProduct(idProduct *int) model.Products {

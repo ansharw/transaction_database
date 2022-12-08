@@ -191,17 +191,15 @@ func (handler *transactionHandler) AddTransaction(trx *model.Transaction, custNa
 	}
 
 	trxs, err := handler.transactionRepository.AddTrx(ctx, transaction)
-	fmt.Println("ini transaction from controller")
-	fmt.Println(trxs)
 	if err != nil {
 		return transaction, transactionDetails, err
 	}
 
 	for _, v := range *trx.GetTransactionDetails() {
-		trxD, _ := handler.transactionDetailsRepository.AddTrxDetails(ctx, v, *trxs.GetId())
-		// fmt.Println(err)
-		fmt.Println("ini transaction detail from controller")
-		fmt.Println(trxD)
+		_, err := handler.transactionDetailsRepository.AddTrxDetails(ctx, v, *trxs.GetId())
+		if err != nil {
+			return transaction, transactionDetails, err
+		}
 		transactionDetails = append(transactionDetails, v)
 		transaction.SetTransactionDetails(transactionDetails)
 	}
